@@ -73,7 +73,7 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
 
             pbar.set_postfix(**{'total_loss': total_loss.item() / (iteration + 1),
                                 'lr': get_lr(optimizer),
-                                'step/s': waste_time})
+                                's/step': waste_time})
             pbar.update(1)
 
             start_time = time.time()
@@ -173,7 +173,9 @@ if __name__ == "__main__":
         lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,
                                                             last_epoch=start_epoch - 1)
     else:
-        lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95, last_epoch=start_epoch - 1)
+        # lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95, last_epoch=start_epoch - 1)
+        lambda1 = lambda epoch: 0.95 ** epoch
+        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer,lr_lambda=lambda1,last_epoch=start_epoch-1)
 
     train_dataset = YoloDataset(lines[:num_train], (input_shape[0], input_shape[1]), hyp=hyp)
     val_dataset = YoloDataset(lines[num_train:], (input_shape[0], input_shape[1]), hyp=hyp)
