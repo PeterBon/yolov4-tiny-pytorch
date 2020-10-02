@@ -14,6 +14,7 @@ from nets.yolo_training import Generator
 import cv2
 from utils import augment
 
+
 class YoloDataset(Dataset):
     def __init__(self, train_lines, image_size, hyp={}):
         super(YoloDataset, self).__init__()
@@ -44,11 +45,13 @@ class YoloDataset(Dataset):
         # 4、随机透视变换
         image, targets = augment.random_perspective(image, targets, perspective=0.001)
         # 5、色域变换
-        augment.augment_hsv(image, hgain=self.hyp.get('hsv_h'), sgain=self.hyp.get('hsv_s'),
-                            vgain=self.hyp.get('hsv_v'))
-        # 6、将cls放到后面
+        augment.random_hsv(image, hgain=self.hyp.get('hsv_h'), sgain=self.hyp.get('hsv_s'),
+                           vgain=self.hyp.get('hsv_v'))
+        # 6、高斯模糊
+        image = augment.random_hsv(image, self.hyp.get('kernel'))
+        # 7、将cls放到后面
         targets = augment.switch_targets(targets, format=augment.CLASS_BEFORE2AFTER)
-        # 7、BGR2RGB
+        # 8、BGR2RGB
         cv2.cvtColor(image, cv2.COLOR_BGR2RGB, dst=image)
         return image, targets
 
@@ -97,16 +100,16 @@ class YoloDataset(Dataset):
             hue = self.rand(-hue, hue)
             sat = self.rand(1, sat) if self.rand() < .5 else 1 / self.rand(1, sat)
             val = self.rand(1, val) if self.rand() < .5 else 1 / self.rand(1, val)
-            x = cv2.cvtColor(np.array(image,np.float32)/255, cv2.COLOR_RGB2HSV)
-            x[..., 0] += hue*360
-            x[..., 0][x[..., 0]>1] -= 1
-            x[..., 0][x[..., 0]<0] += 1
+            x = cv2.cvtColor(np.array(image, np.float32) / 255, cv2.COLOR_RGB2HSV)
+            x[..., 0] += hue * 360
+            x[..., 0][x[..., 0] > 1] -= 1
+            x[..., 0][x[..., 0] < 0] += 1
             x[..., 1] *= sat
             x[..., 2] *= val
-            x[x[:,:, 0]>360, 0] = 360
-            x[:, :, 1:][x[:, :, 1:]>1] = 1
-            x[x<0] = 0
-            image = cv2.cvtColor(x, cv2.COLOR_HSV2RGB) # numpy array, 0 to 1
+            x[x[:, :, 0] > 360, 0] = 360
+            x[:, :, 1:][x[:, :, 1:] > 1] = 1
+            x[x < 0] = 0
+            image = cv2.cvtColor(x, cv2.COLOR_HSV2RGB)  # numpy array, 0 to 1
 
             image = Image.fromarray((image * 255).astype(np.uint8))
             # 将图片进行放置，分别对应四张分割图片的位置
@@ -167,7 +170,7 @@ class YoloDataset(Dataset):
                 img, y = self.get_random_data_with_Mosaic(lines[index:index + 4], self.image_size[0:2])
             else:
                 img, y = self.get_random_data(lines[index], self.image_size[0:2])
-            self.flag = bool(1-self.flag)
+            self.flag = bool(1 - self.flag)
         else:
             img, y = self.get_random_data(lines[index], self.image_size[0:2])
 
@@ -203,4 +206,3 @@ def yolo_dataset_collate(batch):
         bboxes.append(box)
     images = np.array(images)
     return images, bboxes
-

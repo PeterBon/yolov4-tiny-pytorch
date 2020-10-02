@@ -12,7 +12,7 @@ import torch.nn as nn
 import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 from yolo import YOLO
-from nets.yolo4 import YoloBody
+from nets.yolo4_tiny import YoloBody
 from PIL import Image,ImageFont, ImageDraw
 from utils.utils import non_max_suppression, bbox_iou, DecodeBox,letterbox_image,yolo_correct_boxes
 from tqdm import tqdm
@@ -41,7 +41,7 @@ class mAP_Yolo(YOLO):
             outputs = self.net(images)
             
         output_list = []
-        for i in range(3):
+        for i in range(2):
             output_list.append(self.yolo_decodes[i](outputs[i]))
         output = torch.cat(output_list, 1)
         batch_detections = non_max_suppression(output, len(self.class_names),

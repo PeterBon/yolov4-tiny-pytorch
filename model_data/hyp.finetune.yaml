@@ -3,12 +3,12 @@ input_shape: [1024,1024] # 训练的输入图像大小
 annotation_path: tt100k_train.txt # 训练文件路径
 anchors_path: model_data/yolo_anchors.txt # anchor文件路径
 classes_path: model_data/tt100k_classes.txt # classes文件路径
-model_path: logs/Epoch20-Total_Loss2.6771-Val_Loss3.2227.pth # 预训练文件路径
+model_path: logs/Epoch34-Total_Loss2.4817-Val_Loss2.8594.pth # 预训练文件路径
 val_split: 0.1 # 用于验证集的比例
 
 # 训练参数
-start_epoch: 20 # 起始世代
-end_epoch: 30 # 结束世代
+start_epoch: 34 # 起始世代
+end_epoch: 40 # 结束世代
 freeze: False # 是否冻结训练
 cosine_lr: False # 是否使用cosine学习率
 lr: 0.001 # Adam优化器中的初始学习率
@@ -30,6 +30,8 @@ translate: 0.1
 scale: 0.1
 shear: 10
 perspective: 0.001 # 0-0.001
+# random_blur
+kernel: 11
 
 
 
