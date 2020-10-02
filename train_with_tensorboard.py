@@ -11,7 +11,7 @@ import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
-from utils.dataloader import yolo_dataset_collate, YoloDataset
+from utils.dataset import yolo_dataset_collate, YoloDataset
 from nets.yolo_training import YOLOLoss,Generator
 from nets.yolo4_tiny import YoloBody
 from tensorboardX import SummaryWriter
