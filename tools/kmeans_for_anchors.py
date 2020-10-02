@@ -96,14 +96,12 @@ def load_data_tt100k(path):
 
 
 if __name__ == '__main__':
-    # 运行该程序会计算'./VOCdevkit/VOC2007/Annotations'的xml
     # 会生成yolo_anchors.txt
     SIZE = 1
-    anchors_num = 9
-    # 载入数据集，可以使用VOC的xml
+    anchors_num = 6
+    # 载入数据集
     path = r'../../datasets/tt100k/annotations.json'
 
-    # 载入所有的xml
     # 存储格式为转化为比例后的width,height
     data = load_data_tt100k(path)
 

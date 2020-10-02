@@ -9,7 +9,7 @@
 # Metrics:        0.6     0.936     0.896     0.684    0.0115   0.00805   0.00146
 
 # 输入
-input_shape: [1024,1024] # 训练的输入图像大小
+input_shape: [608,608] # 训练的输入图像大小
 annotation_path: tt100k_train.txt # 训练文件路径
 anchors_path: model_data/yolo_anchors.txt # anchor文件路径
 classes_path: model_data/tt100k_classes.txt # classes文件路径
@@ -23,7 +23,7 @@ freeze: True # 是否冻结训练
 cosine_lr: False # 是否使用cosine学习率
 lr: 0.001 # Adam优化器中的初始学习率
 weight_decay: 0.00036 # Adam优化器中的权重衰减参数
-batch_size: 16 # 批大小
+batch_size: 8 # 批大小
 smoooth_label: 0
 
 # 图像增强
