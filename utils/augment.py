@@ -2,6 +2,7 @@ import random
 import cv2
 import numpy as np
 import math
+import skimage
 
 CLASS_BEFORE2AFTER = 0
 CLASS_AFTER2BEFORE = 1
@@ -230,8 +231,16 @@ def random_hsv(img, hgain=0.5, sgain=0.5, vgain=0.5):
 
 def random_blur(img, kernel):
     kernel = random.randrange(1, kernel + 1, 2)
-    img = cv2.GaussianBlur(img, (kernel,kernel),0)
+    img = cv2.GaussianBlur(img, (kernel, kernel), 0)
     return img
+
+
+def random_noise(img, prob=0.5, mode='gaussian', mean=0, var=0.01):
+    if random.random() < prob:
+        img = skimage.util.random_noise(img, mode=mode, mean=mean, var=var)*255
+        img = img.astype('uint8')
+    return img
+
 
 
 def box_candidates(box1, box2, wh_thr=2, ar_thr=20, area_thr=0.1):  # box1(4,n), box2(4,n)
