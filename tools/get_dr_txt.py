@@ -1,8 +1,8 @@
-#-------------------------------------#
+# -------------------------------------#
 #       mAP所需文件计算代码
 #       具体教程请查看Bilibili
 #       Bubbliiiing
-#-------------------------------------#
+# -------------------------------------#
 import cv2
 import numpy as np
 import colorsys
@@ -13,20 +13,47 @@ import torch.backends.cudnn as cudnn
 from torch.autograd import Variable
 from yolo import YOLO
 from nets.yolo4_tiny import YoloBody
-from PIL import Image,ImageFont, ImageDraw
-from utils.utils import non_max_suppression, bbox_iou, DecodeBox,letterbox_image,yolo_correct_boxes
+from PIL import Image, ImageFont, ImageDraw
+from utils.utils import non_max_suppression, bbox_iou, DecodeBox, letterbox_image, yolo_correct_boxes
 from tqdm import tqdm
+
+
+def get_log(log):
+    if log.startswith('Epoch'):
+        log = log.split('-')[0]
+        log = int(log[5:])
+    else:
+        log = 0
+    return log
+
+
 class mAP_Yolo(YOLO):
-    #---------------------------------------------------#
+    _defaults = {
+        "model_path"        : '',
+        "anchors_path"      : '../model_data/yolo_anchors.txt',
+        "classes_path"      : '../model_data/tt100k_classes.txt',
+        "model_image_size"  : (2048, 2048, 3),
+        "confidence"        : 0.5,
+        "iou"               : 0.3,
+        "cuda"              : True
+    }
+    
+    def __init__(self):
+        logs = os.listdir('../logs')
+        logs.sort(key=get_log)
+        self._defaults['model_path'] = '../logs/'+logs[-1]
+        super(mAP_Yolo, self).__init__()
+
+    # ---------------------------------------------------#
     #   检测图片
-    #---------------------------------------------------#
-    def detect_image(self,image_id,image):
+    # ---------------------------------------------------#
+    def detect_image(self, image_id, image):
         self.confidence = 0.01
-        f = open("./input/detection-results/"+image_id+".txt","w") 
+        f = open("./input/detection-results/" + image_id + ".txt", "w")
         image_shape = np.array(np.shape(image)[0:2])
 
-        crop_img = np.array(letterbox_image(image, (self.model_image_size[0],self.model_image_size[1])))
-        photo = np.array(crop_img,dtype = np.float32)
+        crop_img = np.array(letterbox_image(image, (self.model_image_size[0], self.model_image_size[1])))
+        photo = np.array(crop_img, dtype=np.float32)
         photo /= 255.0
         photo = np.transpose(photo, (2, 0, 1))
         photo = photo.astype(np.float32)
@@ -39,38 +66,43 @@ class mAP_Yolo(YOLO):
             if self.cuda:
                 images = images.cuda()
             outputs = self.net(images)
-            
+
         output_list = []
         for i in range(2):
             output_list.append(self.yolo_decodes[i](outputs[i]))
         output = torch.cat(output_list, 1)
         batch_detections = non_max_suppression(output, len(self.class_names),
-                                                conf_thres=self.confidence,
-                                                nms_thres=self.iou)
+                                               conf_thres=self.confidence,
+                                               nms_thres=self.iou)
 
         try:
             batch_detections = batch_detections[0].cpu().numpy()
         except:
             return image
-            
-        top_index = batch_detections[:,4]*batch_detections[:,5] > self.confidence
-        top_conf = batch_detections[top_index,4]*batch_detections[top_index,5]
-        top_label = np.array(batch_detections[top_index,-1],np.int32)
-        top_bboxes = np.array(batch_detections[top_index,:4])
-        top_xmin, top_ymin, top_xmax, top_ymax = np.expand_dims(top_bboxes[:,0],-1),np.expand_dims(top_bboxes[:,1],-1),np.expand_dims(top_bboxes[:,2],-1),np.expand_dims(top_bboxes[:,3],-1)
+
+        top_index = batch_detections[:, 4] * batch_detections[:, 5] > self.confidence
+        top_conf = batch_detections[top_index, 4] * batch_detections[top_index, 5]
+        top_label = np.array(batch_detections[top_index, -1], np.int32)
+        top_bboxes = np.array(batch_detections[top_index, :4])
+        top_xmin, top_ymin, top_xmax, top_ymax = np.expand_dims(top_bboxes[:, 0], -1), np.expand_dims(top_bboxes[:, 1],
+                                                                                                      -1), np.expand_dims(
+            top_bboxes[:, 2], -1), np.expand_dims(top_bboxes[:, 3], -1)
 
         # 去掉灰条
-        boxes = yolo_correct_boxes(top_ymin,top_xmin,top_ymax,top_xmax,np.array([self.model_image_size[0],self.model_image_size[1]]),image_shape)
+        boxes = yolo_correct_boxes(top_ymin, top_xmin, top_ymax, top_xmax,
+                                   np.array([self.model_image_size[0], self.model_image_size[1]]), image_shape)
 
         for i, c in enumerate(top_label):
             predicted_class = self.class_names[c]
             score = str(top_conf[i])
 
             top, left, bottom, right = boxes[i]
-            f.write("%s %s %s %s %s %s\n" % (predicted_class, score[:6], str(int(left)), str(int(top)), str(int(right)),str(int(bottom))))
+            f.write("%s %s %s %s %s %s\n" % (
+                predicted_class, score[:6], str(int(left)), str(int(top)), str(int(right)), str(int(bottom))))
 
         f.close()
-        return 
+        return
+
 
 yolo = mAP_Yolo()
 image_ids = open('C:/Users/Peter/PycharmProjects/datasets/tt100k/test/ids.txt').read().strip().split()
@@ -82,12 +114,11 @@ if not os.path.exists("./input/detection-results"):
 if not os.path.exists("./input/images-optional"):
     os.makedirs("./input/images-optional")
 
-
 for image_id in tqdm(image_ids):
-    image_path = "C:/Users/Peter/PycharmProjects/datasets/tt100k/test/"+image_id+".jpg"
+    image_path = "C:/Users/Peter/PycharmProjects/datasets/tt100k/test/" + image_id + ".jpg"
     image = Image.open(image_path)
     # 开启后在之后计算mAP可以可视化
     # image.save("./input/images-optional/"+image_id+".jpg")
-    yolo.detect_image(image_id,image)
-    
+    yolo.detect_image(image_id, image)
+
 print("Conversion completed!")
