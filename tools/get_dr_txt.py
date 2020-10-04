@@ -18,31 +18,7 @@ from utils.utils import non_max_suppression, bbox_iou, DecodeBox, letterbox_imag
 from tqdm import tqdm
 
 
-def get_log(log):
-    if log.startswith('Epoch'):
-        log = log.split('-')[0]
-        log = int(log[5:])
-    else:
-        log = 0
-    return log
-
-
 class mAP_Yolo(YOLO):
-    _defaults = {
-        "model_path"        : '',
-        "anchors_path"      : '../model_data/yolo_anchors.txt',
-        "classes_path"      : '../model_data/tt100k_classes.txt',
-        "model_image_size"  : (2048, 2048, 3),
-        "confidence"        : 0.5,
-        "iou"               : 0.3,
-        "cuda"              : True
-    }
-    
-    def __init__(self):
-        logs = os.listdir('../logs')
-        logs.sort(key=get_log)
-        self._defaults['model_path'] = '../logs/'+logs[-1]
-        super(mAP_Yolo, self).__init__()
 
     # ---------------------------------------------------#
     #   检测图片
