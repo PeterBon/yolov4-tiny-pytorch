@@ -111,7 +111,7 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
     print('Saving state, iter:', str(epoch + 1))
     torch.save(model.state_dict(), 'logs/Epoch%d-Total_Loss%.4f-Val_Loss%.4f.pth' % (
         (epoch + 1), total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
-    torch.save(model.state_dict(),'logs/last.pth')
+    torch.save(model.state_dict(), 'logs/last.pth')
 
 
 # ----------------------------------------------------#
@@ -173,12 +173,12 @@ if __name__ == "__main__":
                            weight_decay=hyp.get('weight_decay'))
     if hyp.get('cosine_lr'):
         lf = lambda x: ((1 + math.cos(x * math.pi / hyp.get('epochs'))) / 2) * (1 - hyp['lrf']) + hyp['lrf']  # cosine
-        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch-1)
+        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
         # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,last_epoch=start_epoch - 1)
     else:
         # lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95, last_epoch=start_epoch - 1)
         lambda1 = lambda epoch: 0.95 ** epoch
-        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer,lr_lambda=lambda1,last_epoch=start_epoch-1)
+        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1, last_epoch=start_epoch - 1)
 
     train_dataset = YoloDataset(lines[:num_train], (input_shape[0], input_shape[1]), hyp=hyp)
     val_dataset = YoloDataset(lines[num_train:], (input_shape[0], input_shape[1]), hyp=hyp)
