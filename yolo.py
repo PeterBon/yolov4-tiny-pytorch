@@ -20,7 +20,7 @@ from utils.utils import non_max_suppression, bbox_iou, DecodeBox, letterbox_imag
 # --------------------------------------------#
 class YOLO(object):
     _defaults = {
-        "model_path": 'last.pth',
+        "model_path": 'logs/last.pth',
         "anchors_path": 'model_data/yolo_anchors.txt',
         "classes_path": 'model_data/tt100k_classes.txt',
         "model_image_size": (2048, 2048, 3),
@@ -147,7 +147,7 @@ class YOLO(object):
                                    np.array([self.model_image_size[0], self.model_image_size[1]]), image_shape)
 
         font = ImageFont.truetype(font='model_data/simhei.ttf',
-                                  size=np.floor(3e-2 * np.shape(image)[1] + 0.5).astype('int32'))
+                                  size=np.floor(6e-3 * np.shape(image)[1] + 0.5).astype('int32'))
 
         thickness = (np.shape(image)[0] + np.shape(image)[1]) // self.model_image_size[0]
 

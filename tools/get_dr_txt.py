@@ -19,7 +19,15 @@ from tqdm import tqdm
 
 
 class mAP_Yolo(YOLO):
-
+    _defaults = {
+        "model_path": '../logs/last.pth',
+        "anchors_path": '../model_data/yolo_anchors.txt',
+        "classes_path": '../model_data/tt100k_classes.txt',
+        "model_image_size": (2048, 2048, 3),
+        "confidence": 0.5,
+        "iou": 0.3,
+        "cuda": True
+    }
     # ---------------------------------------------------#
     #   检测图片
     # ---------------------------------------------------#

@@ -3,6 +3,7 @@
 #-------------------------------------#
 from yolo import YOLO
 from PIL import Image
+import time
 
 yolo = YOLO()
 
@@ -14,5 +15,8 @@ while True:
         print('Open Error! Try again!')
         continue
     else:
+        t1 = time.time()
         r_image = yolo.detect_image(image)
+        t2 = time.time()
+        print(t2-t1)
         r_image.show()
