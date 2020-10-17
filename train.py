@@ -17,6 +17,19 @@ from nets.yolo4_tiny import YoloBody
 from tqdm import tqdm
 import yaml
 import math
+from tensorboardX import SummaryWriter
+from utils.utils import plot_lr_scheduler
+
+def init_weights(model):
+    # 进行权值初始化
+    for m in model.modules():
+        if isinstance(m, nn.Conv2d):
+            n = m.kernel_size[0] * m.kernel_size[1] * m.out_channels
+            m.weight.data.normal_(0, math.sqrt(2. / n))
+        elif isinstance(m, nn.BatchNorm2d):
+            m.weight.data.fill_(1)
+            m.bias.data.zero_()
+    return model
 
 
 def get_lr(optimizer):
@@ -104,13 +117,30 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
             pbar.set_postfix(**{'total_loss': val_loss.item() / (iteration + 1)})
             pbar.update(1)
 
+    # tensorboardX
+    writer.add_scalars('loss', {'train': total_loss / (epoch_size + 1), 'val': val_loss / (epoch_size_val + 1)},
+                       epoch)
+    writer.add_scalar('lr', get_lr(optimizer), epoch)
+    writer.flush()
+
     print('Finish Validation')
     print('Epoch:' + str(epoch + 1) + '/' + str(Epoch))
     print('Total Loss: %.4f || Val Loss: %.4f ' % (total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
 
     print('Saving state, iter:', str(epoch + 1))
-    torch.save(model.state_dict(), 'logs/Epoch%d-Total_Loss%.4f-Val_Loss%.4f.pth' % (
-        (epoch + 1), total_loss / (epoch_size + 1), val_loss / (epoch_size_val + 1)))
+    # log.yaml
+    avg_train_loss = total_loss / (epoch_size + 1)
+    avg_train_loss = avg_train_loss.item()
+    avg_val_loss = val_loss / (epoch_size_val + 1)
+    avg_val_loss = avg_val_loss.item()
+    log['epoch_number'] += 1
+    log['Epoch%03d' % (epoch + 1)] = [avg_train_loss, avg_val_loss]
+    if log['best_val_loss'] < 0 or avg_val_loss < log['best_val_loss']:
+        log['best_val_loss'] = avg_val_loss
+        torch.save(model.state_dict(), 'logs/best.pth')
+    with open('logs/log.yaml', 'w', encoding='utf-8') as f:
+        yaml.dump(log, f)
+
     torch.save(model.state_dict(), 'logs/last.pth')
 
 
@@ -119,8 +149,17 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
 #   https://www.bilibili.com/video/BV1zE411u7Vw
 # ----------------------------------------------------#
 if __name__ == "__main__":
-    with open('model_data/hyp.finetune.yaml', encoding='utf-8') as f:
+    # hyp
+    with open('model_data/hyp.yaml', encoding='utf-8') as f:
         hyp = yaml.load(f, Loader=yaml.FullLoader)
+
+    # log
+    if os.path.exists('logs/log.yaml'):
+        with open('logs/log.yaml', encoding='utf-8') as f:
+            log = yaml.load(f, Loader=yaml.FullLoader)
+    else:
+        log = {'epoch_number': 0, 'best_val_loss': -1}
+
     #   输入的shape大小
     input_shape = hyp.get('input_shape')
 
@@ -132,16 +171,18 @@ if __name__ == "__main__":
     model = YoloBody(len(anchors[0]), num_classes)
 
     model_path = hyp.get('model_path')
-    # 加快模型训练的效率
-    print('Loading weights into state dict...')
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    model_dict = model.state_dict()
-    pretrained_dict = torch.load(model_path, map_location=device)
-    pretrained_dict = {k: v for k, v in pretrained_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
-    model_dict.update(pretrained_dict)
-    model.load_state_dict(model_dict)
-    print('Finished!')
-
+    if model_path:
+        # 加快模型训练的效率
+        print('Loading weights into state dict...')
+        device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        model_dict = model.state_dict()
+        pretrained_dict = torch.load(model_path, map_location=device)
+        pretrained_dict = {k: v for k, v in pretrained_dict.items() if np.shape(model_dict[k]) == np.shape(v)}
+        model_dict.update(pretrained_dict)
+        model.load_state_dict(model_dict)
+        print('Finished!')
+    else:
+        init_weights(model)
     net = model.train()
 
     Cuda = torch.cuda.is_available()
@@ -166,20 +207,30 @@ if __name__ == "__main__":
     num_val = int(len(lines) * val_split)
     num_train = len(lines) - num_val
 
+    # tensorboardX
+    writer = SummaryWriter(logdir='logs')
+    if Cuda:
+        graph_inputs = torch.from_numpy(np.random.rand(1, 3, input_shape[0], input_shape[1])).type(
+            torch.FloatTensor).cuda()
+    else:
+        graph_inputs = torch.from_numpy(np.random.rand(1, 3, input_shape[0], input_shape[1])).type(torch.FloatTensor)
+    writer.add_graph(model, (graph_inputs,))
+
     Batch_size = hyp.get('batch_size')
     start_epoch = hyp.get('start_epoch')
     end_epoch = hyp.get('end_epoch')
     optimizer = optim.Adam([{'params': net.parameters(), 'initial_lr': hyp.get('lr')}], lr=hyp.get('lr'),
                            weight_decay=hyp.get('weight_decay'))
-    if hyp.get('cosine_lr'):
+    if hyp.get('lr_scheduler') == 'cosine':
         lf = lambda x: ((1 + math.cos(x * math.pi / hyp.get('epochs'))) / 2) * (1 - hyp['lrf']) + hyp['lrf']  # cosine
         lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
         # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,last_epoch=start_epoch - 1)
     else:
         # lr_scheduler = optim.lr_scheduler.StepLR(optimizer, step_size=1, gamma=0.95, last_epoch=start_epoch - 1)
-        lambda1 = lambda epoch: 0.95 ** epoch
-        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda1, last_epoch=start_epoch - 1)
+        func = lambda epoch: hyp.get('gamma') ** epoch
+        lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=func, last_epoch=start_epoch - 1)
 
+    # plot_lr_scheduler(optimizer,lr_scheduler,epochs=hyp.get('epochs'))
     train_dataset = YoloDataset(lines[:num_train], (input_shape[0], input_shape[1]), hyp=hyp)
     val_dataset = YoloDataset(lines[num_train:], (input_shape[0], input_shape[1]), hyp=hyp)
     gen = DataLoader(train_dataset, batch_size=Batch_size, num_workers=4, pin_memory=True,
@@ -199,3 +250,5 @@ if __name__ == "__main__":
     for epoch in range(start_epoch, end_epoch):
         fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, gen_val, end_epoch, Cuda)
         lr_scheduler.step()
+
+    writer.close()
