@@ -43,10 +43,10 @@ class YoloDataset(Dataset):
         # 3、letterbox
         image, targets = augment.letterbox(image, targets, new_shape=input_shape)
         # 4、随机透视变换
-        image, targets = augment.random_perspective(image, targets, perspective=self.hyp['perspective'])
+        # image, targets = augment.random_perspective(image, targets, perspective=self.hyp['perspective'])
         # 5、色域变换
-        augment.random_hsv(image, hgain=self.hyp.get('hsv_h'), sgain=self.hyp.get('hsv_s'),
-                           vgain=self.hyp.get('hsv_v'))
+        # augment.random_hsv(image, hgain=self.hyp.get('hsv_h'), sgain=self.hyp.get('hsv_s'),
+        #                    vgain=self.hyp.get('hsv_v'))
         # 6、高斯模糊、高斯噪声
         # image = augment.random_blur(image, kernel=self.hyp.get('kernel'))
         # image = augment.random_noise(image, prob=self.hyp.get('random_noise_prob'))
