@@ -15,7 +15,7 @@ lr_scheduler: cosine # 学习率曲线
 lr: 0.001 # Adam优化器中的初始学习率
 lrf: 0.1 # cosine学习率系数的最小值
 weight_decay: 0.00036 # Adam优化器中的权重衰减参数
-batch_size: 8 # 批大小
+batch_size: 32 # 批大小
 smoooth_label: 0
 
 # 图像增强
