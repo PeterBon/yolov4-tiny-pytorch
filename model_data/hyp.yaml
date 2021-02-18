@@ -8,8 +8,8 @@ val_split: 0.1 # 用于验证集的比例
 
 # 训练参数
 start_epoch: 0 # 起始epoch
-end_epoch: 300 # 结束epoch
-epochs: 300 # 总的epoch数
+end_epoch: 200 # 结束epoch
+epochs: 200 # 总的epoch数
 freeze: False # 是否冻结训练
 lr_scheduler: cosine # 学习率曲线
 lr: 0.001 # Adam优化器中的初始学习率
