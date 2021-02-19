@@ -37,11 +37,11 @@ class YoloDataset(Dataset):
         image = cv2.imread(line[0])
         targets = np.array([np.array(list(map(int, box.split(',')))) for box in line[1:]])
         # 1、将cls放在前面
-        # targets = augment.switch_targets(targets, format=augment.CLASS_AFTER2BEFORE)
+        targets = augment.switch_targets(targets, format=augment.CLASS_AFTER2BEFORE)
         # 2、以指定shape截取图片，至少包含一个target
-        # image, targets = augment.random_crop(image, targets, shape=input_shape, area_thr=self.hyp.get('area_thr'))
+        image, targets = augment.random_crop(image, targets, shape=input_shape, area_thr=self.hyp.get('area_thr'))
         # 3、letterbox
-        # image, targets = augment.letterbox(image, targets, new_shape=input_shape)
+        image, targets = augment.letterbox(image, targets, new_shape=input_shape)
         # 4、随机透视变换
         # image, targets = augment.random_perspective(image, targets, perspective=self.hyp['perspective'])
         # 5、色域变换
@@ -51,7 +51,7 @@ class YoloDataset(Dataset):
         # image = augment.random_blur(image, kernel=self.hyp.get('kernel'))
         # image = augment.random_noise(image, prob=self.hyp.get('random_noise_prob'))
         # 7、将cls放到后面
-        # targets = augment.switch_targets(targets, format=augment.CLASS_BEFORE2AFTER)
+        targets = augment.switch_targets(targets, format=augment.CLASS_BEFORE2AFTER)
         # 8、BGR2RGB
         cv2.cvtColor(image, cv2.COLOR_BGR2RGB, dst=image)
         return image, targets
