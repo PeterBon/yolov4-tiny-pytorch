@@ -20,7 +20,7 @@ from utils.utils import non_max_suppression, bbox_iou, DecodeBox, letterbox_imag
 # --------------------------------------------#
 class YOLO(object):
     _defaults = {
-        "model_path": 'logs/last.pth',
+        "model_path": 'logs/best.pth',
         "anchors_path": 'model_data/yolo_anchors.txt',
         "classes_path": 'model_data/tt100k_classes.txt',
         "model_image_size": (2048, 2048, 3),

@@ -19,6 +19,7 @@ import yaml
 import math
 from tensorboardX import SummaryWriter
 from utils.utils import plot_lr_scheduler
+import utils.message
 
 def init_weights(model):
     # 进行权值初始化
@@ -252,3 +253,4 @@ if __name__ == "__main__":
         lr_scheduler.step()
 
     writer.close()
+    utils.message.send_email('训练完毕','训练完毕')
