@@ -7,7 +7,7 @@ model_path: logs/last.pth # 预训练文件路径
 val_split: 0.1 # 用于验证集的比例
 
 # 训练参数
-start_epoch: 73 # 起始epoch
+start_epoch: 166 # 起始epoch
 end_epoch: 300 # 结束epoch
 epochs: 300 # 总的epoch数
 freeze: False # 是否冻结训练

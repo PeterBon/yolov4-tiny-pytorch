@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import torch.nn as nn
 import math
 from collections import OrderedDict
+from nets.attention_layers import SEModule
 
 #-------------------------------------------------#
 #   卷积块

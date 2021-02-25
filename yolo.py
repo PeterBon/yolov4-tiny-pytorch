@@ -86,7 +86,7 @@ class YOLO(object):
         print('Finished!')
 
         self.yolo_decodes = []
-        self.anchors_mask = [[3, 4, 5], [1, 2, 3]]
+        self.anchors_mask = [[3, 4, 5], [0, 1, 2]]
         for i in range(2):
             self.yolo_decodes.append(
                 DecodeBox(np.reshape(self.anchors, [-1, 2])[self.anchors_mask[i]], len(self.class_names),
