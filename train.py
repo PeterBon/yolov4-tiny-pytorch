@@ -222,7 +222,9 @@ if __name__ == "__main__":
     end_epoch = hyp.get('end_epoch')
     optimizer = optim.Adam([{'params': net.parameters(), 'initial_lr': hyp.get('lr')}], lr=hyp.get('lr'),
                            weight_decay=hyp.get('weight_decay'))
-    if hyp.get('lr_scheduler') == 'cosine':
+    if hyp.get('lr_scheduler') == 'Plateau':
+        lr_scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer,factor=0.5,patience=2,verbose=True)
+    elif hyp.get('lr_scheduler') == 'cosine':
         lf = lambda x: ((1 + math.cos(x * math.pi / hyp.get('epochs'))) / 2) * (1 - hyp['lrf']) + hyp['lrf']  # cosine
         lr_scheduler = optim.lr_scheduler.LambdaLR(optimizer, lr_lambda=lf, last_epoch=start_epoch - 1)
         # lr_scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=5, eta_min=1e-5,last_epoch=start_epoch - 1)
