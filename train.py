@@ -119,9 +119,9 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
             pbar.update(1)
 
     # tensorboardX
-    writer.add_scalars('loss', {'train': total_loss / (epoch_size + 1), 'val': val_loss / (epoch_size_val + 1)},
+    writer.add_scalars('scalar/loss', {'train': total_loss / (epoch_size + 1), 'val': val_loss / (epoch_size_val + 1)},
                        epoch)
-    writer.add_scalar('lr', get_lr(optimizer), epoch)
+    writer.add_scalar('scalar/lr', get_lr(optimizer), epoch)
     writer.flush()
 
     print('Finish Validation')
