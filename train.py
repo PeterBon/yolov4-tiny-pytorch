@@ -143,6 +143,7 @@ def fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, genv
         yaml.dump(log, f)
 
     torch.save(model.state_dict(), 'logs/last.pth')
+    return avg_val_loss
 
 
 # ----------------------------------------------------#
@@ -251,8 +252,8 @@ if __name__ == "__main__":
             param.requires_grad = True
 
     for epoch in range(start_epoch, end_epoch):
-        fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, gen_val, end_epoch, Cuda)
-        lr_scheduler.step()
+        val_loss = fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, gen_val, end_epoch, Cuda)
+        lr_scheduler.step(val_loss)
 
     writer.close()
     utils.message.send_email('训练完毕','训练完毕')
