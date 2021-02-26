@@ -39,7 +39,7 @@ class Resblock_body(nn.Module):
         self.conv3 = BasicConv(out_channels//2, out_channels//2, 3)
 
         self.conv4 = BasicConv(out_channels, out_channels, 1)
-        self.attention = sa_layer(out_channels)
+        self.attention = sa_layer(out_channels,out_channels//2)
         self.maxpool = nn.MaxPool2d([2,2],[2,2])
 
     def forward(self, x):
