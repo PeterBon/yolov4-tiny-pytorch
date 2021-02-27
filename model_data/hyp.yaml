@@ -11,7 +11,7 @@ start_epoch: 0 # 起始epoch
 end_epoch: 300 # 结束epoch
 epochs: 300 # 总的epoch数
 freeze: False # 是否冻结训练
-lr_scheduler: consine # 学习率曲线
+lr_scheduler: cosine # 学习率曲线
 lr: 0.001 # Adam优化器中的初始学习率
 lrf: 0.1 # cosine学习率系数的最小值
 weight_decay: 0.0005 # Adam优化器中的权重衰减参数
