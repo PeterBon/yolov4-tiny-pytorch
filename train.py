@@ -253,7 +253,10 @@ if __name__ == "__main__":
 
     for epoch in range(start_epoch, end_epoch):
         val_loss = fit_one_epoch(net, yolo_losses, epoch, epoch_size, epoch_size_val, gen, gen_val, end_epoch, Cuda)
-        lr_scheduler.step(val_loss)
+        if hyp.get('lr_scheduler') == 'plateau':
+            lr_scheduler.step(val_loss)
+        else:
+            lr_scheduler.step()
 
     writer.close()
     utils.message.send_email('训练完毕','训练完毕')
