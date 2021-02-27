@@ -180,7 +180,7 @@ class YOLOLoss(nn.Module):
         # 计算一共有多少张图片
         bs = len(target)
         # 获得先验框
-        anchor_index = [[3,4,5],[1,2,3]][self.feature_length.index(in_w)]
+        anchor_index = [[3,4,5],[0,1,2]][self.feature_length.index(in_w)]
         
         # 创建全是0或者全是1的阵列
         mask = torch.zeros(bs, int(self.num_anchors/2), in_h, in_w, requires_grad=False)
@@ -260,7 +260,7 @@ class YOLOLoss(nn.Module):
 
     def get_ignore(self,prediction,target,scaled_anchors,in_w, in_h,noobj_mask):
         bs = len(target)
-        anchor_index = [[3,4,5],[1,2,3]][self.feature_length.index(in_w)]
+        anchor_index = [[3,4,5],[0,1,2]][self.feature_length.index(in_w)]
         scaled_anchors = np.array(scaled_anchors)[anchor_index]
         # 先验框的中心位置的调整参数
         x = torch.sigmoid(prediction[..., 0])  
