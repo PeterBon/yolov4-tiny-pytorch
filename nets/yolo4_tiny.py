@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from collections import OrderedDict
-from nets.SAdarknet53_tiny import darknet53_tiny
+from nets.CAdarknet53_tiny import darknet53_tiny
 
 
 #-------------------------------------------------#
